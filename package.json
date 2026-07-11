@@ -1,0 +1,16 @@
+{
+  "name": "selvis-arts-craft-root",
+  "version": "1.0.0",
+  "description": "Root for Selvi's arts & craft e-commerce",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install && npm install --prefix server && npm install --prefix client",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
