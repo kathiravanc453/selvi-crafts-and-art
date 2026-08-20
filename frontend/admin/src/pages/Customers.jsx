@@ -1,18 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { Users as UsersIcon, Mail, Phone, MapPin, Calendar, ShoppingBag, Search, Eye, X, ShieldCheck } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const Customers = () => {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const token = localStorage.getItem('admin_token');
 
   useEffect(() => {
-    fetch('/api/admin/customers', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => setCustomers(Array.isArray(d) ? d : []))
-      .catch(console.error);
-  }, []);
+    setLoading(true);
+    fetch(`${API_BASE}/api/admin/customers`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}: Failed to fetch customers`);
+        return r.json();
+      })
+      .then(d => {
+        setCustomers(Array.isArray(d) ? d : []);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [token]);
 
   const filteredCustomers = customers.filter(c => 
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
