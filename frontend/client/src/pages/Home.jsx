@@ -12,17 +12,17 @@ const Home = () => {
   useEffect(() => {
     fetch('/api/banners')
       .then(res => res.json())
-      .then(data => setBanners(data))
+      .then(data => setBanners(Array.isArray(data) ? data : []))
       .catch(console.error);
 
     fetch('/api/categories')
       .then(res => res.json())
-      .then(data => setCategories(data))
+      .then(data => setCategories(Array.isArray(data) ? data : []))
       .catch(console.error);
 
     fetch('/api/products')
       .then(res => res.json())
-      .then(data => setProducts(data))
+      .then(data => setProducts(Array.isArray(data) ? data : []))
       .catch(console.error);
   }, []);
 

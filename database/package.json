@@ -1,0 +1,16 @@
+{
+  "name": "selvis-arts-craft-database",
+  "version": "1.0.0",
+  "description": "Database management, migrations, and seed scripts for Selvi's Arts & Craft",
+  "type": "module",
+  "scripts": {
+    "seed": "node seed.js",
+    "migrate:mysql": "node migrateToMysql.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.4.2",
+    "mysql2": "^3.23.3",
+    "sqlite3": "^5.1.7"
+  }
+}

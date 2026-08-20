@@ -49,7 +49,16 @@ const Navbar = () => {
           
           {user ? (
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Hi, {user.name}</span>
+              <Link to="/profile" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }} title="My Profile">
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.name} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1.5 solid #cca34d' }} />
+                ) : (
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#cca34d', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.8rem' }}>
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-main)', fontWeight: 600 }}>{user.name}</span>
+              </Link>
               <Link to="/my-orders" style={styles.iconWrapper} title="My Orders">
                 <Package size={20} />
               </Link>
@@ -106,6 +115,11 @@ const Navbar = () => {
             {link.name}
           </Link>
         ))}
+        {user && (
+          <Link to="/profile" style={{ ...styles.mobileLink, color: 'var(--color-gold-dark)', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>
+            👤 My Profile
+          </Link>
+        )}
         {user && (
           <Link to="/my-orders" style={{ ...styles.mobileLink, color: 'var(--color-gold-dark)', fontWeight: '600' }} onClick={() => setIsMenuOpen(false)}>
             📦 My Orders

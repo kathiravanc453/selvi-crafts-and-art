@@ -1,16 +1,21 @@
 {
   "name": "selvis-arts-craft-root",
   "version": "1.0.0",
-  "description": "Root for Selvi's arts & craft e-commerce",
+  "description": "Selvi's Arts & Craft E-Commerce (Frontend, Backend, Database)",
   "private": true,
   "scripts": {
-    "install-all": "npm install && npm install --prefix server && npm install --prefix client",
-    "server": "npm run dev --prefix server",
-    "client": "npm run dev --prefix client",
-    "seed": "npm run seed --prefix server",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "install-all": "npm install && npm install --prefix backend && npm install --prefix frontend/client && npm install --prefix frontend/admin && npm install --prefix database",
+    "backend": "npm run dev --prefix backend",
+    "client": "npm run dev --prefix frontend/client",
+    "admin": "npm run dev --prefix frontend/admin",
+    "seed": "npm run seed --prefix database",
+    "migrate:mysql": "npm run migrate:mysql --prefix database",
+    "dev": "concurrently \"npm run backend\" \"npm run client\" \"npm run admin\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
   }
 }

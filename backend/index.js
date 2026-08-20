@@ -4,32 +4,76 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { query, queryOne, run } from './database.js';
+import { query, queryOne, run } from '../database/database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+import multer from 'multer';
+import fs from 'fs';
+
+const uploadDir = join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadDir));
 
-import multer from 'multer';
-import fs from 'fs';
-const uploadDir = join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+import { v2 as cloudinary } from 'cloudinary';
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'))
-});
-const upload = multer({ storage });
+// Configure Cloudinary if credentials are provided in .env
+const useCloudinary = Boolean(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 
-// --- ADMIN FILE UPLOAD ROUTE ---
-app.post('/api/admin/upload', upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No image provided' });
-  res.json({ url: `/uploads/${req.file.filename}` });
-});
+if (useCloudinary) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+  console.log(`Cloudinary CDN active for cloud: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+}
+
+const storageMemory = multer.memoryStorage();
+const uploadMemory = multer({ storage: storageMemory });
+
+const uploadToCloudinary = (fileBuffer, folder = 'handmade_uploads') => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+};
+
+// Unified Image Upload Handler (Supports Cloudinary CDN & Local Storage)
+const handleFileUpload = async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No image file provided' });
+
+  if (useCloudinary) {
+    try {
+      const cloudResult = await uploadToCloudinary(req.file.buffer, 'handmade');
+      return res.json({ url: cloudResult.secure_url, public_id: cloudResult.public_id });
+    } catch (err) {
+      console.error('Cloudinary upload error:', err);
+      return res.status(500).json({ error: 'Cloudinary upload failed: ' + err.message });
+    }
+  }
+
+  // Fallback local storage
+  const filename = Date.now() + '-' + req.file.originalname.replace(/\s+/g, '-');
+  const filePath = join(uploadDir, filename);
+  fs.writeFileSync(filePath, req.file.buffer);
+  res.json({ url: `/uploads/${filename}` });
+};
+
+// --- FILE UPLOAD ROUTES ---
+app.post('/api/admin/upload', uploadMemory.single('image'), handleFileUpload);
+app.post('/api/upload', uploadMemory.single('image'), handleFileUpload);
 
 const JWT_SECRET = 'super-secret-key-for-selvi-arts';
 
@@ -91,9 +135,33 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.get('/api/auth/me', authMiddleware, async (req, res) => {
   try {
-    const user = await queryOne('SELECT id, name, email, role FROM users WHERE id = ?', [req.user.id]);
+    const user = await queryOne('SELECT id, name, email, role, avatar_url, phone, address_line1, address_line2, city, state, zip FROM users WHERE id = ?', [req.user.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Customer Profile Details & Avatar Picture
+app.put('/api/auth/profile', authMiddleware, async (req, res) => {
+  try {
+    const { name, avatar_url, phone, address_line1, address_line2, city, state, zip } = req.body;
+    await run(`
+      UPDATE users SET
+        name = COALESCE(?, name),
+        avatar_url = COALESCE(?, avatar_url),
+        phone = COALESCE(?, phone),
+        address_line1 = COALESCE(?, address_line1),
+        address_line2 = COALESCE(?, address_line2),
+        city = COALESCE(?, city),
+        state = COALESCE(?, state),
+        zip = COALESCE(?, zip)
+      WHERE id = ?
+    `, [name || null, avatar_url || null, phone || null, address_line1 || null, address_line2 || null, city || null, state || null, zip || null, req.user.id]);
+    
+    const updatedUser = await queryOne('SELECT id, name, email, role, avatar_url, phone, address_line1, address_line2, city, state, zip FROM users WHERE id = ?', [req.user.id]);
+    res.json({ message: 'Profile updated successfully', user: updatedUser });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -276,10 +344,16 @@ app.get('/api/admin/categories', authMiddleware, adminMiddleware, async (req, re
   }
 });
 
-// Admin: Get all customers
+// Admin: Get all customers (with complete profile details & statistics)
 app.get('/api/admin/customers', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const users = await query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC');
+    const users = await query(`
+      SELECT u.id, u.name, u.email, u.role, u.avatar_url, u.phone, u.address_line1, u.address_line2, u.city, u.state, u.zip, u.created_at,
+             (SELECT COUNT(*) FROM orders WHERE user_id = u.id) as order_count,
+             (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE user_id = u.id) as total_spent
+      FROM users u
+      ORDER BY u.created_at DESC
+    `);
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -444,6 +518,26 @@ app.post('/api/orders', authMiddleware, async (req, res) => {
       req.user.id, total_amount, shipping_fee, discount_amount, coupon_code, payment_method,
       shippingDetails.name, shippingDetails.email, shippingDetails.phone, shippingDetails.address1, shippingDetails.address2,
       shippingDetails.city, shippingDetails.state, shippingDetails.zip
+    ]);
+
+    // Save / update customer profile details in users table
+    await run(`
+      UPDATE users SET
+        phone = COALESCE(?, phone),
+        address_line1 = COALESCE(?, address_line1),
+        address_line2 = COALESCE(?, address_line2),
+        city = COALESCE(?, city),
+        state = COALESCE(?, state),
+        zip = COALESCE(?, zip)
+      WHERE id = ?
+    `, [
+      shippingDetails.phone || null,
+      shippingDetails.address1 || null,
+      shippingDetails.address2 || null,
+      shippingDetails.city || null,
+      shippingDetails.state || null,
+      shippingDetails.zip || null,
+      req.user.id
     ]);
 
     for (const item of items) {

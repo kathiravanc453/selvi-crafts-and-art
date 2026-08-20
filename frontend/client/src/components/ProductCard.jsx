@@ -39,11 +39,11 @@ const ProductCard = ({ product }) => {
         <div style={styles.priceContainer}>
           {product.offer_price ? (
             <>
-              <span style={styles.originalPrice}>Rs. {product.price.toFixed(2)}</span>
-              <span style={styles.offerPrice}>Rs. {product.offer_price.toFixed(2)}</span>
+              <span style={styles.originalPrice}>Rs. {Number(product.price || 0).toFixed(2)}</span>
+              <span style={styles.offerPrice}>Rs. {Number(product.offer_price || 0).toFixed(2)}</span>
             </>
           ) : (
-            <span style={styles.offerPrice}>Rs. {product.price.toFixed(2)}</span>
+            <span style={styles.offerPrice}>Rs. {Number(product.price || 0).toFixed(2)}</span>
           )}
         </div>
       </div>

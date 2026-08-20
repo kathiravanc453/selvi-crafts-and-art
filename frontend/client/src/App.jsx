@@ -16,6 +16,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import TrackOrder from './pages/TrackOrder';
 import MyOrders from './pages/MyOrders';
 import AdminProducts from './pages/AdminProducts';
+import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -43,6 +44,7 @@ function App() {
                   <Route path="/login" element={<LoginRegister />} />
                   <Route path="/orders/:id" element={<TrackOrder />} />
                   <Route path="/my-orders" element={<MyOrders />} />
+                  <Route path="/profile" element={<Profile />} />
                   <Route path="/admin/products" element={
                     <ProtectedRoute requireAdmin={true}><AdminProducts /></ProtectedRoute>
                   } />

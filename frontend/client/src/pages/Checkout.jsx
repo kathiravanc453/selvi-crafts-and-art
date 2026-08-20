@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
 import toast from 'react-hot-toast';
-import { SmartphoneNfc, CreditCard, Banknote } from 'lucide-react';
+import { SmartphoneNfc, CreditCard, Banknote, ShieldCheck, Truck } from 'lucide-react';
 
 const Checkout = () => {
   const { user } = useContext(AuthContext);
@@ -21,12 +21,12 @@ const Checkout = () => {
   const [shippingDetails, setShippingDetails] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    phone: '',
-    address1: '',
-    address2: '',
-    city: '',
-    state: '',
-    zip: ''
+    phone: user?.phone || '',
+    address1: user?.address_line1 || '',
+    address2: user?.address_line2 || '',
+    city: user?.city || '',
+    state: user?.state || '',
+    zip: user?.zip || ''
   });
 
   const [paymentMethod, setPaymentMethod] = useState('upi');
@@ -125,23 +125,138 @@ const Checkout = () => {
               </div>
             </div>
 
+            {/* PAYMENT METHOD SECTION WITH LOGOS */}
             <h3 style={{ ...styles.sectionTitle, marginTop: '40px' }}>Payment Method</h3>
             <div style={styles.paymentMethods}>
-              <label style={styles.radioLabel}>
-                <input type="radio" value="upi" checked={paymentMethod === 'upi'} onChange={() => setPaymentMethod('upi')} />
-                <SmartphoneNfc size={24} color="#0056b3" />
-                <span style={{fontWeight: '500'}}>UPI Payment</span>
+              
+              {/* 1. UPI PAYMENT OPTION */}
+              <label style={{
+                ...styles.radioCard,
+                borderColor: paymentMethod === 'upi' ? '#cca34d' : '#e5e5e5',
+                backgroundColor: paymentMethod === 'upi' ? '#fffdf5' : '#fff',
+                boxShadow: paymentMethod === 'upi' ? '0 4px 14px rgba(204,163,77,0.15)' : 'none'
+              }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="upi"
+                  checked={paymentMethod === 'upi'}
+                  onChange={() => setPaymentMethod('upi')}
+                  style={styles.radioInput}
+                />
+                <div style={styles.cardMain}>
+                  <div style={styles.cardHeader}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <SmartphoneNfc size={22} color="#5f259f" />
+                      <span style={styles.methodTitle}>UPI Instant Payment</span>
+                      <span style={styles.instantBadge}>FASTEST</span>
+                    </div>
+                    {/* Brand Logos */}
+                    <div style={styles.logoGroup}>
+                      {/* GPay Logo */}
+                      <span style={{ ...styles.brandPill, background: '#fff', border: '1px solid #e0e0e0', color: '#4285F4', fontWeight: 'bold' }}>
+                        G<span style={{ color: '#EA4335' }}>P</span><span style={{ color: '#FBBC05' }}>a</span><span style={{ color: '#34A853' }}>y</span>
+                      </span>
+                      {/* PhonePe Logo */}
+                      <span style={{ ...styles.brandPill, background: '#5f259f', color: '#fff', fontWeight: 'bold' }}>
+                        PhonePe
+                      </span>
+                      {/* Paytm Logo */}
+                      <span style={{ ...styles.brandPill, background: '#002e6e', color: '#00baf2', fontWeight: 'bold' }}>
+                        Paytm
+                      </span>
+                      {/* BHIM UPI */}
+                      <span style={{ ...styles.brandPill, background: '#ff6600', color: '#fff', fontWeight: 'bold' }}>
+                        UPI
+                      </span>
+                    </div>
+                  </div>
+                  <p style={styles.methodDesc}>
+                    Pay instantly via Google Pay, PhonePe, Paytm, BHIM or any UPI QR app.
+                  </p>
+                </div>
               </label>
-              <label style={styles.radioLabel}>
-                <input type="radio" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
-                <CreditCard size={24} color="#ff4d4f" />
-                <span style={{fontWeight: '500'}}>Credit/Debit Card</span>
+
+              {/* 2. CREDIT/DEBIT CARD OPTION */}
+              <label style={{
+                ...styles.radioCard,
+                borderColor: paymentMethod === 'card' ? '#cca34d' : '#e5e5e5',
+                backgroundColor: paymentMethod === 'card' ? '#fffdf5' : '#fff',
+                boxShadow: paymentMethod === 'card' ? '0 4px 14px rgba(204,163,77,0.15)' : 'none'
+              }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="card"
+                  checked={paymentMethod === 'card'}
+                  onChange={() => setPaymentMethod('card')}
+                  style={styles.radioInput}
+                />
+                <div style={styles.cardMain}>
+                  <div style={styles.cardHeader}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <CreditCard size={22} color="#1a1f71" />
+                      <span style={styles.methodTitle}>Credit / Debit Card</span>
+                    </div>
+                    {/* Brand Logos */}
+                    <div style={styles.logoGroup}>
+                      {/* VISA Logo */}
+                      <span style={{ ...styles.brandPill, background: '#1a1f71', color: '#f7b600', fontWeight: 'bold', fontStyle: 'italic' }}>
+                        VISA
+                      </span>
+                      {/* MasterCard Logo */}
+                      <div style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 8px', borderRadius: 4, background: '#222' }}>
+                        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#eb001b', display: 'inline-block' }}></span>
+                        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#f79e1b', display: 'inline-block', marginLeft: -5 }}></span>
+                        <span style={{ color: '#fff', fontSize: '0.68rem', fontWeight: 700, marginLeft: 4 }}>Mastercard</span>
+                      </div>
+                      {/* RuPay Logo */}
+                      <span style={{ ...styles.brandPill, background: '#0066b2', color: '#88c540', fontWeight: 'bold' }}>
+                        RuPay
+                      </span>
+                    </div>
+                  </div>
+                  <p style={styles.methodDesc}>
+                    Supports Visa, Mastercard, RuPay, Maestro & International Cards.
+                  </p>
+                </div>
               </label>
-              <label style={styles.radioLabel}>
-                <input type="radio" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
-                <Banknote size={24} color="#52c41a" />
-                <span style={{fontWeight: '500'}}>Cash on Delivery</span>
+
+              {/* 3. CASH ON DELIVERY (COD) OPTION */}
+              <label style={{
+                ...styles.radioCard,
+                borderColor: paymentMethod === 'cod' ? '#cca34d' : '#e5e5e5',
+                backgroundColor: paymentMethod === 'cod' ? '#fffdf5' : '#fff',
+                boxShadow: paymentMethod === 'cod' ? '0 4px 14px rgba(204,163,77,0.15)' : 'none'
+              }}>
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="cod"
+                  checked={paymentMethod === 'cod'}
+                  onChange={() => setPaymentMethod('cod')}
+                  style={styles.radioInput}
+                />
+                <div style={styles.cardMain}>
+                  <div style={styles.cardHeader}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Banknote size={22} color="#2e7d32" />
+                      <span style={styles.methodTitle}>Cash on Delivery</span>
+                    </div>
+                    {/* Badge */}
+                    <div style={styles.logoGroup}>
+                      <span style={{ ...styles.brandPill, background: '#e8f5e9', color: '#2e7d32', fontWeight: 700, border: '1px solid #a5d6a7' }}>
+                        <Truck size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                        PAY AT DOORSTEP
+                      </span>
+                    </div>
+                  </div>
+                  <p style={styles.methodDesc}>
+                    Pay cash or UPI directly to delivery agent upon receiving order.
+                  </p>
+                </div>
               </label>
+
             </div>
           </form>
         </div>
@@ -187,6 +302,10 @@ const Checkout = () => {
             >
               Place Order
             </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 15, color: '#666', fontSize: '0.8rem' }}>
+              <ShieldCheck size={16} color="#cca34d" /> 100% Safe & Encrypted Payment
+            </div>
           </div>
         </div>
       </div>
@@ -227,16 +346,69 @@ const styles = {
   paymentMethods: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '15px'
+    gap: '16px'
   },
-  radioLabel: {
+  radioCard: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '14px',
+    padding: '16px 20px',
+    border: '2px solid #e5e5e5',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease-in-out'
+  },
+  radioInput: {
+    accentColor: '#cca34d',
+    width: '18px',
+    height: '18px',
+    marginTop: '3px',
+    cursor: 'pointer'
+  },
+  cardMain: {
+    flex: 1
+  },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '10px',
+    marginBottom: '4px'
+  },
+  methodTitle: {
+    fontWeight: '700',
+    fontSize: '1rem',
+    color: '#111'
+  },
+  instantBadge: {
+    background: '#fff0f6',
+    color: '#eb2f96',
+    fontSize: '0.68rem',
+    fontWeight: 800,
+    padding: '2px 6px',
+    borderRadius: 4,
+    border: '1px solid #ffadd2'
+  },
+  methodDesc: {
+    margin: 0,
+    fontSize: '0.82rem',
+    color: '#666',
+    lineHeight: '1.4'
+  },
+  logoGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: '10px',
-    padding: '15px',
-    border: '1px solid #eee',
-    borderRadius: 'var(--radius-sm)',
-    cursor: 'pointer'
+    gap: '6px',
+    flexWrap: 'wrap'
+  },
+  brandPill: {
+    fontSize: '0.7rem',
+    padding: '3px 8px',
+    borderRadius: '4px',
+    letterSpacing: '0.3px',
+    display: 'inline-flex',
+    alignItems: 'center'
   },
   summarySection: {
     flex: '1 1 350px'
