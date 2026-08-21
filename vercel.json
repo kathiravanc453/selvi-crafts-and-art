@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build --prefix frontend/client && BUILD_MODE=unified npm run build --prefix frontend/admin && node scripts/bundle-unified.js",
+  "outputDirectory": "frontend/client/dist",
+  "rewrites": [
+    { "source": "/admin/(.*)", "destination": "/admin/index.html" },
+    { "source": "/admin", "destination": "/admin/index.html" },
+    { "source": "/((?!admin).*)", "destination": "/index.html" }
+  ]
+}

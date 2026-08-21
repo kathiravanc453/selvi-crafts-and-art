@@ -54,7 +54,7 @@ const Layout = ({ children }) => {
             </NavLink>
           ))}
           <div className="sidebar-section" style={{ marginTop: 32 }}>Store</div>
-          <a href="http://localhost:5173" target="_blank" rel="noreferrer" className="nav-item">
+          <a href="/" target="_blank" rel="noreferrer" className="nav-item">
             <ExternalLink size={18} /> View Store
           </a>
         </nav>
@@ -112,9 +112,10 @@ const AppRoutes = () => {
 };
 
 function App() {
+  const baseUrl = import.meta.env.BASE_URL || '/';
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename={baseUrl}>
         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
         <AppRoutes />
       </BrowserRouter>

@@ -25,6 +25,7 @@ const Footer = () => {
           <Link to="#" style={styles.link}>Returns & Refunds</Link>
           <Link to="#" style={styles.link}>FAQ</Link>
           <Link to="/contact" style={styles.link}>Track Order</Link>
+          <a href="/admin" target="_blank" rel="noreferrer" style={{ ...styles.link, color: 'var(--color-gold-dark)', fontWeight: '600' }}>🛡️ Admin Portal</a>
         </div>
 
 
