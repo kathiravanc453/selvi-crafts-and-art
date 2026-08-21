@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import Testimonials from '../components/Testimonials';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const Home = () => {
   const [banners, setBanners] = useState([]);
   const [products, setProducts] = useState([]);
@@ -10,17 +12,17 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    fetch('/api/banners')
+    fetch(`${API_BASE}/api/banners`)
       .then(res => res.json())
       .then(data => setBanners(Array.isArray(data) ? data : []))
       .catch(console.error);
 
-    fetch('/api/categories')
+    fetch(`${API_BASE}/api/categories`)
       .then(res => res.json())
       .then(data => setCategories(Array.isArray(data) ? data : []))
       .catch(console.error);
 
-    fetch('/api/products')
+    fetch(`${API_BASE}/api/products`)
       .then(res => res.json())
       .then(data => setProducts(Array.isArray(data) ? data : []))
       .catch(console.error);

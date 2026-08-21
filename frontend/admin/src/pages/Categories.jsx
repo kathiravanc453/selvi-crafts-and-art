@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Save } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const token = () => localStorage.getItem('admin_token');
 const hdrs = () => ({ Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' });
 
@@ -17,7 +18,7 @@ const Categories = () => {
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
-    fetch('/api/admin/categories', { headers: hdrs() }).then(r=>r.json()).then(d=>setCategories(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/categories`, { headers: hdrs() }).then(r=>r.json()).then(d=>setCategories(Array.isArray(d)?d:[]));
   };
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true); };
@@ -32,7 +33,7 @@ const Categories = () => {
     e.preventDefault();
     if (!form.name) return toast.error('Name required');
     setSaving(true);
-    const url = editId ? `/api/admin/categories/${editId}` : '/api/admin/categories';
+    const url = editId ? `${API_BASE}/api/admin/categories/${editId}` : `${API_BASE}/api/admin/categories`;
     const method = editId ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(form) });
     if (res.ok) { toast.success(editId?'Updated':'Created'); setShowForm(false); fetchAll(); }
@@ -47,7 +48,7 @@ const Categories = () => {
     formData.append('image', file);
     toast.loading('Uploading image...', { id: 'upload' });
     try {
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE}/api/admin/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok) { setForm(prev => ({ ...prev, image_url: data.url })); toast.success('Image uploaded', { id: 'upload' }); }
       else throw new Error(data.error);
@@ -56,7 +57,7 @@ const Categories = () => {
 
   const handleDelete = async (id, name) => {
     if (!confirm(`Delete category "${name}"?`)) return;
-    const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE', headers: hdrs() });
+    const res = await fetch(`${API_BASE}/api/admin/categories/${id}`, { method: 'DELETE', headers: hdrs() });
     if (res.ok) { toast.success('Deleted'); fetchAll(); } else toast.error('Error deleting');
   };
 

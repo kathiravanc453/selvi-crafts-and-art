@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Save, ToggleLeft, ToggleRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const token = () => localStorage.getItem('admin_token');
 const hdrs = () => ({ Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' });
 
@@ -17,7 +18,7 @@ const Offers = () => {
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
-    fetch('/api/admin/offers', { headers: hdrs() }).then(r=>r.json()).then(d=>setOffers(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/offers`, { headers: hdrs() }).then(r=>r.json()).then(d=>setOffers(Array.isArray(d)?d:[]));
   };
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true); };
@@ -40,7 +41,7 @@ const Offers = () => {
     e.preventDefault();
     if (!form.title || !form.code || !form.discount_percent) return toast.error('Required fields missing');
     setSaving(true);
-    const url = editId ? `/api/admin/offers/${editId}` : '/api/admin/offers';
+    const url = editId ? `${API_BASE}/api/admin/offers/${editId}` : `${API_BASE}/api/admin/offers`;
     const method = editId ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(form) });
     if (res.ok) { toast.success(editId?'Updated':'Created'); setShowForm(false); fetchAll(); }
@@ -50,12 +51,12 @@ const Offers = () => {
 
   const handleDelete = async (id, title) => {
     if (!confirm(`Delete offer "${title}"?`)) return;
-    const res = await fetch(`/api/admin/offers/${id}`, { method: 'DELETE', headers: hdrs() });
+    const res = await fetch(`${API_BASE}/api/admin/offers/${id}`, { method: 'DELETE', headers: hdrs() });
     if (res.ok) { toast.success('Deleted'); fetchAll(); } else toast.error('Error deleting');
   };
 
   const toggleActive = async (o) => {
-    await fetch(`/api/admin/offers/${o.id}`, { method:'PUT', headers:hdrs(), body:JSON.stringify({...o, is_active:!o.is_active}) });
+    await fetch(`${API_BASE}/api/admin/offers/${o.id}`, { method:'PUT', headers:hdrs(), body:JSON.stringify({...o, is_active:!o.is_active}) });
     toast.success(`${o.is_active?'Deactivated':'Activated'}`); fetchAll();
   };
 

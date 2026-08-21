@@ -11,6 +11,8 @@ const STATUS_COLORS = {
   cancelled: { bg: '#fff1f0', color: '#ff4d4f' },
 };
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const MyOrders = () => {
   const { user } = useContext(AuthContext);
   const [orders, setOrders] = useState([]);
@@ -18,7 +20,7 @@ const MyOrders = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch('/api/my-orders', {
+    fetch(`${API_BASE}/api/my-orders`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())

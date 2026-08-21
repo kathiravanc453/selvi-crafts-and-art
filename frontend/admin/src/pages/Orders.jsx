@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, MapPin, Phone, Mail, CreditCard, Package, Users, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const token = () => localStorage.getItem('admin_token');
 const headers = () => ({ Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' });
 
@@ -24,7 +25,7 @@ const Orders = () => {
   useEffect(() => { fetchOrders(); }, []);
 
   const fetchOrders = () => {
-    fetch('/api/orders', { headers: headers() })
+    fetch(`${API_BASE}/api/orders`, { headers: headers() })
       .then(r => r.json())
       .then(d => { setOrders(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -32,7 +33,7 @@ const Orders = () => {
 
   const fetchItems = async (id) => {
     if (itemsMap[id]) return;
-    const res = await fetch(`/api/admin/orders/${id}`, { headers: headers() });
+    const res = await fetch(`${API_BASE}/api/admin/orders/${id}`, { headers: headers() });
     const data = await res.json();
     setItemsMap(prev => ({ ...prev, [id]: data.items || [] }));
   };
@@ -43,7 +44,7 @@ const Orders = () => {
   };
 
   const updateStatus = async (id, status) => {
-    const res = await fetch(`/api/orders/${id}/status`, { method:'PUT', headers: headers(), body: JSON.stringify({ status }) });
+    const res = await fetch(`${API_BASE}/api/orders/${id}/status`, { method:'PUT', headers: headers(), body: JSON.stringify({ status }) });
     if (res.ok) { toast.success(`Order #${id} → ${status}`); setOrders(prev => prev.map(o => o.id===id ? {...o, status} : o)); }
     else toast.error('Failed to update');
   };

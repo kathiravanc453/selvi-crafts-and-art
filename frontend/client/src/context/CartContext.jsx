@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AuthContext } from './AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
@@ -20,7 +22,7 @@ export const CartProvider = ({ children }) => {
   const fetchCart = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/cart', {
+      const res = await fetch(`${API_BASE}/api/cart`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -40,7 +42,7 @@ export const CartProvider = ({ children }) => {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/cart', {
+      const res = await fetch(`${API_BASE}/api/cart`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ export const CartProvider = ({ children }) => {
     if (!user) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/cart/${cartId}`, {
+      const res = await fetch(`${API_BASE}/api/cart/${cartId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +84,7 @@ export const CartProvider = ({ children }) => {
     if (!user) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/cart/${cartId}`, {
+      const res = await fetch(`${API_BASE}/api/cart/${cartId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

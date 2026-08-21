@@ -2,6 +2,8 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const LoginRegister = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -16,7 +18,7 @@ const LoginRegister = () => {
     e.preventDefault();
     setError('');
 
-    const url = isLogin ? '/api/auth/login' : '/api/auth/register';
+    const url = isLogin ? `${API_BASE}/api/auth/login` : `${API_BASE}/api/auth/register`;
     const payload = isLogin 
       ? { email: formData.email, password: formData.password }
       : formData;

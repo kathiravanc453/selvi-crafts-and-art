@@ -6,6 +6,8 @@ import { CartContext } from '../context/CartContext';
 import { WishlistContext } from '../context/WishlistContext';
 import ProductCard from '../components/ProductCard';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const ProductDetails = () => {
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
@@ -20,7 +22,7 @@ const ProductDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`/api/products/${slug}`)
+    fetch(`${API_BASE}/api/products/${slug}`)
       .then(res => res.json())
       .then(data => {
         setProduct(data);
@@ -28,7 +30,7 @@ const ProductDetails = () => {
           setActiveImage(data.images[0].image_url);
         }
         if (data.category_slug) {
-          fetch(`/api/products?category=${data.category_slug}`)
+          fetch(`${API_BASE}/api/products?category=${data.category_slug}`)
             .then(res => res.json())
             .then(cats => setRelated(cats.filter(p => p.id !== data.id).slice(0, 4)));
         }

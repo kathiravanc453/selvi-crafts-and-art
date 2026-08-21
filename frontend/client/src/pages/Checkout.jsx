@@ -5,6 +5,8 @@ import { CartContext } from '../context/CartContext';
 import toast from 'react-hot-toast';
 import { SmartphoneNfc, CreditCard, Banknote, ShieldCheck, Truck } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const Checkout = () => {
   const { user } = useContext(AuthContext);
   const { cartItems, fetchCart, subtotal: contextSubtotal } = useContext(CartContext);
@@ -39,7 +41,7 @@ const Checkout = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/orders', {
+      const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

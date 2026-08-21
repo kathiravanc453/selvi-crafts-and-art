@@ -3,6 +3,8 @@ import { AuthContext } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { User, Camera, Phone, MapPin, Mail, Save, CheckCircle } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const Profile = () => {
   const { user, login } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
@@ -50,7 +52,7 @@ const Profile = () => {
 
     setUploading(true);
     try {
-      const res = await fetch('/api/upload', {
+      const res = await fetch(`${API_BASE}/api/upload`, {
         method: 'POST',
         body: data
       });
@@ -74,7 +76,7 @@ const Profile = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/auth/profile', {
+      const res = await fetch(`${API_BASE}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

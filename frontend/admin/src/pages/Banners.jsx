@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Save, ToggleLeft, ToggleRight, ArrowUp, ArrowDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const token = () => localStorage.getItem('admin_token');
 const hdrs = () => ({ Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' });
 
@@ -17,7 +18,7 @@ const Banners = () => {
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
-    fetch('/api/admin/banners', { headers: hdrs() }).then(r=>r.json()).then(d=>setBanners(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/banners`, { headers: hdrs() }).then(r=>r.json()).then(d=>setBanners(Array.isArray(d)?d:[]));
   };
 
   const openAdd = () => { setForm({...EMPTY, display_order: banners.length+1}); setEditId(null); setShowForm(true); };
@@ -35,7 +36,7 @@ const Banners = () => {
     e.preventDefault();
     if (!form.title || !form.image_url) return toast.error('Required fields missing');
     setSaving(true);
-    const url = editId ? `/api/admin/banners/${editId}` : '/api/admin/banners';
+    const url = editId ? `${API_BASE}/api/admin/banners/${editId}` : `${API_BASE}/api/admin/banners`;
     const method = editId ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(form) });
     if (res.ok) { toast.success(editId?'Updated':'Created'); setShowForm(false); fetchAll(); }
@@ -50,7 +51,7 @@ const Banners = () => {
     formData.append('image', file);
     toast.loading('Uploading image...', { id: 'upload' });
     try {
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE}/api/admin/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok) { setForm(prev => ({ ...prev, image_url: data.url })); toast.success('Image uploaded', { id: 'upload' }); }
       else throw new Error(data.error);
@@ -59,12 +60,12 @@ const Banners = () => {
 
   const handleDelete = async (id, title) => {
     if (!confirm(`Delete banner "${title}"?`)) return;
-    const res = await fetch(`/api/admin/banners/${id}`, { method: 'DELETE', headers: hdrs() });
+    const res = await fetch(`${API_BASE}/api/admin/banners/${id}`, { method: 'DELETE', headers: hdrs() });
     if (res.ok) { toast.success('Deleted'); fetchAll(); } else toast.error('Error deleting');
   };
 
   const toggleActive = async (b) => {
-    await fetch(`/api/admin/banners/${b.id}`, { method:'PUT', headers:hdrs(), body:JSON.stringify({...b, is_active:!b.is_active}) });
+    await fetch(`${API_BASE}/api/admin/banners/${b.id}`, { method:'PUT', headers:hdrs(), body:JSON.stringify({...b, is_active:!b.is_active}) });
     toast.success(`${b.is_active?'Deactivated':'Activated'}`); fetchAll();
   };
 

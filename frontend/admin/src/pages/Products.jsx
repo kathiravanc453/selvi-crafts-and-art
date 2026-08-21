@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Save, Search, ToggleLeft, ToggleRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const token = () => localStorage.getItem('admin_token');
 const hdrs = () => ({ Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' });
 
@@ -20,13 +21,13 @@ const Products = () => {
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
-    fetch('/api/admin/products', { headers: hdrs() }).then(r=>r.json()).then(d=>setProducts(Array.isArray(d)?d:[]));
-    fetch('/api/admin/categories',{headers:hdrs()}).then(r=>r.json()).then(d=>setCategories(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/products`, { headers: hdrs() }).then(r=>r.json()).then(d=>setProducts(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/categories`,{headers:hdrs()}).then(r=>r.json()).then(d=>setCategories(Array.isArray(d)?d:[]));
   };
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setTab('details'); setShowForm(true); };
   const openEdit = async (p) => {
-    const res = await fetch(`/api/admin/products/${p.id}`,{headers:hdrs()});
+    const res = await fetch(`${API_BASE}/api/admin/products/${p.id}`,{headers:hdrs()});
     const d = await res.json();
     setForm({ name:d.name||'', slug:d.slug||'', description:d.description||'', price:d.price||'', offer_price:d.offer_price||'', category_id:d.category_id||'', stock:d.stock||'', is_active:d.is_active===1, image_url:d.images?.[0]?.image_url||'', shipping_days:d.shipping_days||'3-5', shipping_info:d.shipping_info||'Ships within 3-5 business days.' });
     setEditId(p.id); setTab('details'); setShowForm(true);
@@ -42,7 +43,7 @@ const Products = () => {
     e.preventDefault();
     if (!form.name || !form.price) { toast.error('Name & price required'); return; }
     setSaving(true);
-    const url = editId ? `/api/admin/products/${editId}` : '/api/admin/products';
+    const url = editId ? `${API_BASE}/api/admin/products/${editId}` : `${API_BASE}/api/admin/products`;
     const method = editId ? 'PUT' : 'POST';
     const res = await fetch(url,{method,headers:hdrs(),body:JSON.stringify(form)});
     if (res.ok) { toast.success(editId?'Product updated!':'Product created!'); setShowForm(false); fetchAll(); }
@@ -57,7 +58,7 @@ const Products = () => {
     formData.append('image', file);
     toast.loading('Uploading image...', { id: 'upload' });
     try {
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+      const res = await fetch(`${API_BASE}/api/admin/upload`, { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok) { setForm(prev => ({ ...prev, image_url: data.url })); toast.success('Image uploaded', { id: 'upload' }); }
       else throw new Error(data.error);
@@ -66,7 +67,7 @@ const Products = () => {
 
   const handleDelete = async (id, name) => {
     if (!confirm(`Delete "${name}"?`)) return;
-    const res = await fetch(`/api/admin/products/${id}`,{method:'DELETE',headers:hdrs()});
+    const res = await fetch(`${API_BASE}/api/admin/products/${id}`,{method:'DELETE',headers:hdrs()});
     if (res.ok) { toast.success('Deleted'); fetchAll(); } else toast.error('Error');
   };
 

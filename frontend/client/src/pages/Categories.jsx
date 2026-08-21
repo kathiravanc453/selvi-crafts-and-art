@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const Categories = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    fetch('/api/categories')
+    fetch(`${API_BASE}/api/categories`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(console.error);

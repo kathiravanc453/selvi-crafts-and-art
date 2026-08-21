@@ -4,6 +4,8 @@ import ProductCard from '../components/ProductCard';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -15,7 +17,7 @@ const Shop = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/api/categories')
+    fetch(`${API_BASE}/api/categories`)
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(console.error);
@@ -31,7 +33,7 @@ const Shop = () => {
     setSearch(q);
     setSort(s);
 
-    let url = `/api/products?sort=${s}`;
+    let url = `${API_BASE}/api/products?sort=${s}`;
     if (cat) url += `&category=${cat}`;
     if (q) url += `&search=${q}`;
 
