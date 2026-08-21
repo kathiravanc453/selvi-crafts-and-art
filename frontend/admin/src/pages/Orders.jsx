@@ -26,7 +26,7 @@ const Orders = () => {
 
   const fetchOrders = () => {
     fetch(`${API_BASE}/api/orders`, { headers: headers() })
-      .then(r => r.json())
+      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : [])
       .then(d => { setOrders(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   };

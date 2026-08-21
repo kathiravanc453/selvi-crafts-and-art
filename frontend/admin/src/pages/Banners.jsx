@@ -18,7 +18,10 @@ const Banners = () => {
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
-    fetch(`${API_BASE}/api/admin/banners`, { headers: hdrs() }).then(r=>r.json()).then(d=>setBanners(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/banners`, { headers: hdrs() })
+      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : [])
+      .then(d => setBanners(Array.isArray(d) ? d : []))
+      .catch(() => setBanners([]));
   };
 
   const openAdd = () => { setForm({...EMPTY, display_order: banners.length+1}); setEditId(null); setShowForm(true); };

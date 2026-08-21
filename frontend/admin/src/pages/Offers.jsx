@@ -18,7 +18,10 @@ const Offers = () => {
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = () => {
-    fetch(`${API_BASE}/api/admin/offers`, { headers: hdrs() }).then(r=>r.json()).then(d=>setOffers(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/offers`, { headers: hdrs() })
+      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : [])
+      .then(d => setOffers(Array.isArray(d) ? d : []))
+      .catch(() => setOffers([]));
   };
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true); };
