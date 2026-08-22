@@ -24,12 +24,22 @@ const Home = () => {
 
     fetch(`${API_BASE}/api/categories`)
       .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
-      .then(data => { if (Array.isArray(data) && data.length > 0) setCategories(data); })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCategories(data);
+          localStorage.setItem('shared_categories', JSON.stringify(data));
+        }
+      })
       .catch(console.error);
 
     fetch(`${API_BASE}/api/products`)
       .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
-      .then(data => { if (Array.isArray(data) && data.length > 0) setProducts(data); })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setProducts(data);
+          localStorage.setItem('shared_products', JSON.stringify(data));
+        }
+      })
       .catch(console.error);
   }, []);
 

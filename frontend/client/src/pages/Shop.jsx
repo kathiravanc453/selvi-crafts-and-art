@@ -53,9 +53,7 @@ const Shop = () => {
       .then(data => {
         if (Array.isArray(data)) {
           setProducts(data);
-          if (data.length > 0) {
-            localStorage.setItem('shared_products', JSON.stringify(data));
-          }
+          localStorage.setItem('shared_products', JSON.stringify(data));
         }
       })
       .catch(() => {});
