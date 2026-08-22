@@ -54,33 +54,25 @@ const Categories = () => {
     e.preventDefault();
     if (!form.name) return toast.error('Name required');
     setSaving(true);
+    let savedCat = null;
     try {
       const url = editId ? `${API_BASE}/api/admin/categories/${editId}` : `${API_BASE}/api/admin/categories`;
       const method = editId ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(form) });
       const contentType = res.headers.get('content-type') || '';
-      if (res.ok) {
-        toast.success(editId ? 'Category updated!' : 'Category created!');
-        setShowForm(false);
-        fetchAll();
-        setSaving(false);
-        return;
-      }
-      if (contentType.includes('application/json')) {
-        const d = await res.json();
-        toast.error(d.error || 'Error saving category');
+      if (res.ok && contentType.includes('application/json')) {
+        savedCat = await res.json();
       }
     } catch (err) {
       console.error(err);
     }
     
-    // Fallback: Save to local state if backend API is unreachable
-    const newCat = { id: editId || Date.now(), ...form, slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') };
+    const newCat = savedCat || { id: editId || Date.now(), ...form, slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') };
     let updatedCats = [];
     if (editId) {
       updatedCats = categories.map(c => c.id === editId ? newCat : c);
     } else {
-      updatedCats = [...categories, newCat];
+      updatedCats = [...categories.filter(c => c.id !== newCat.id), newCat];
     }
     setCategories(updatedCats);
     localStorage.setItem('shared_categories', JSON.stringify(updatedCats));
@@ -94,6 +86,7 @@ const Categories = () => {
     toast.success(editId ? 'Category updated!' : 'Category created!');
     setShowForm(false);
     setSaving(false);
+    fetchAll();
   };
 
   const handleImageUpload = async (e) => {

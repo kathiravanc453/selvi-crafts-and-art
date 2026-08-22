@@ -62,31 +62,23 @@ const Products = () => {
     e.preventDefault();
     if (!form.name || !form.price) { toast.error('Name & price required'); return; }
     setSaving(true);
+    let savedProd = null;
     try {
       const url = editId ? `${API_BASE}/api/admin/products/${editId}` : `${API_BASE}/api/admin/products`;
       const method = editId ? 'PUT' : 'POST';
-      const res = await fetch(url,{method,headers:hdrs(),body:JSON.stringify(form)});
+      const res = await fetch(url, { method, headers: hdrs(), body: JSON.stringify(form) });
       const contentType = res.headers.get('content-type') || '';
-      if (res.ok) {
-        toast.success(editId ? 'Product updated!' : 'Product created!');
-        setShowForm(false);
-        fetchAll();
-        setSaving(false);
-        return;
-      }
-      if (contentType.includes('application/json')) {
-        const d = await res.json();
-        toast.error(d.error || 'Error saving product');
+      if (res.ok && contentType.includes('application/json')) {
+        savedProd = await res.json();
       }
     } catch (err) { console.error(err); }
 
-    // Fallback: Save to local state if backend API is unreachable
-    const newProd = { id: editId || Date.now(), ...form, is_active: true };
+    const newProd = savedProd || { id: editId || Date.now(), ...form, is_active: true };
     let updatedProds = [];
     if (editId) {
       updatedProds = products.map(p => p.id === editId ? newProd : p);
     } else {
-      updatedProds = [...products, newProd];
+      updatedProds = [...products.filter(p => p.id !== newProd.id), newProd];
     }
     setProducts(updatedProds);
     localStorage.setItem('shared_products', JSON.stringify(updatedProds));
@@ -100,6 +92,7 @@ const Products = () => {
     toast.success(editId ? 'Product updated!' : 'Product created!');
     setShowForm(false);
     setSaving(false);
+    fetchAll();
   };
 
   const handleImageUpload = async (e) => {
