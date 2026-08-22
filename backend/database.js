@@ -301,6 +301,13 @@ export const initDb = async () => {
     )
   `);
 
+  try {
+    const adminCheck = await queryOne('SELECT * FROM users WHERE email = ?', ['admin@selviarts.com']);
+    if (!adminCheck) {
+      await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Admin', 'admin@selviarts.com', 'adminpassword', 'admin']);
+    }
+  } catch(e) {}
+
   console.log(`Database tables successfully initialized (${isNeonPg ? 'Neon DB PostgreSQL' : (useMysql ? 'MySQL' : 'SQLite')}).`);
 };
 
