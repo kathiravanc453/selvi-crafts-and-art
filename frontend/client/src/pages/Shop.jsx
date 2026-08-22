@@ -51,8 +51,11 @@ const Shop = () => {
     fetch(url)
       .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setProducts(data);
+          if (data.length > 0) {
+            localStorage.setItem('shared_products', JSON.stringify(data));
+          }
         }
       })
       .catch(() => {});
