@@ -16,6 +16,15 @@ const uploadDir = join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const app = express();
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
@@ -196,7 +205,7 @@ app.get('/api/products', async (req, res) => {
              (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE (p.is_active = 1 OR p.is_active IS NULL)
+      WHERE (p.is_active = 1 OR p.is_active IS NULL OR p.is_active = true OR p.is_active = 'true')
     `;
     const params = [];
 
