@@ -73,7 +73,13 @@ const Products = () => {
       }
     } catch (err) { console.error(err); }
 
-    const newProd = savedProd || { id: editId || Date.now(), ...form, is_active: true };
+    const newProd = {
+      ...(savedProd || form),
+      id: (savedProd?.id || editId || Date.now()),
+      is_active: true,
+      image: (savedProd?.image || savedProd?.image_url || form.image_url || ''),
+      image_url: (savedProd?.image_url || savedProd?.image || form.image_url || '')
+    };
     let updatedProds = [];
     if (editId) {
       updatedProds = products.map(p => p.id === editId ? newProd : p);

@@ -27,11 +27,14 @@ const ProductCard = ({ product }) => {
     toggleWishlist(product);
   };
 
+  const imgSrc = product.image || product.image_url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800';
+  const prodSlug = product.slug || (product.name ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'product');
+
   return (
-    <Link to={`/product/${product.slug}`} style={styles.card}>
+    <Link to={`/product/${prodSlug}`} style={styles.card}>
       <div style={styles.imageContainer}>
         {stockBadge}
-        <img src={product.image} alt={product.name} style={styles.image} />
+        <img src={imgSrc} alt={product.name || 'Handmade Product'} style={styles.image} />
       </div>
       
       <div style={styles.content}>
