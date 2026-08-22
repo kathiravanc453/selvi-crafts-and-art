@@ -44,19 +44,27 @@ const Shop = () => {
     };
     loadShared();
 
-    let url = `${API_BASE}/api/products?sort=${s}`;
-    if (cat) url += `&category=${cat}`;
-    if (q) url += `&search=${q}`;
+    let timer;
+    const fetchProducts = () => {
+      let url = `${API_BASE}/api/products?sort=${s}`;
+      if (cat) url += `&category=${cat}`;
+      if (q) url += `&search=${q}`;
 
-    fetch(url)
-      .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
-      .then(data => {
-        if (Array.isArray(data)) {
-          setProducts(data);
-          localStorage.setItem('shared_products', JSON.stringify(data));
-        }
-      })
-      .catch(() => {});
+      fetch(url)
+        .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
+        .then(data => {
+          if (Array.isArray(data)) {
+            setProducts(data);
+            if (data.length > 0) {
+              localStorage.setItem('shared_products', JSON.stringify(data));
+            }
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchProducts();
+    timer = setInterval(fetchProducts, 4000);
 
     try {
       const bc = new BroadcastChannel('selvi_store_sync');
@@ -65,8 +73,13 @@ const Shop = () => {
           setProducts(event.data.data);
         }
       };
-      return () => bc.close();
-    } catch(e){}
+      return () => {
+        clearInterval(timer);
+        bc.close();
+      };
+    } catch(e){
+      return () => clearInterval(timer);
+    }
   }, [location.search]);
 
   const updateFilters = (newCat, newSearch, newSort) => {

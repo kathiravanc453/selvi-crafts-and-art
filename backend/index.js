@@ -201,29 +201,29 @@ app.get('/api/products', async (req, res) => {
   try {
     const { category, search, sort } = req.query;
     let sql = `
-      SELECT p.*, c.slug as category_slug, 
-             (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+      SELECT p.*, c.slug as category_slug, c.name as category_name,
+             COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1), (SELECT image_url FROM product_images WHERE product_id = p.id LIMIT 1), p.image_url, '') as image
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE (p.is_active = 1 OR p.is_active IS NULL OR p.is_active = true OR p.is_active = 'true')
+      WHERE 1=1
     `;
     const params = [];
 
     if (category) {
-      sql += ' AND c.slug = ?';
-      params.push(category);
+      sql += ' AND (c.slug = ? OR LOWER(c.name) = LOWER(?))';
+      params.push(category, category);
     }
     if (search) {
-      sql += ' AND p.name LIKE ?';
-      params.push(`%${search}%`);
+      sql += ' AND (p.name LIKE ? OR p.description LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
     if (sort === 'price_asc') sql += ' ORDER BY p.price ASC';
     else if (sort === 'price_desc') sql += ' ORDER BY p.price DESC';
-    else sql += ' ORDER BY p.created_at DESC';
+    else sql += ' ORDER BY p.id DESC';
 
     const result = await query(sql, params);
-    res.json(result);
+    res.json(result || []);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
