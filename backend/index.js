@@ -170,7 +170,13 @@ app.put('/api/auth/profile', authMiddleware, async (req, res) => {
 // --- PUBLIC ROUTES (Products, Categories, Banners, Offers) ---
 app.get('/api/categories', async (req, res) => {
   try {
-    const categories = await query('SELECT * FROM categories');
+    let categories = await query('SELECT * FROM categories');
+    if (!categories || categories.length === 0) {
+      await run('INSERT INTO categories (name, slug, description, image_url) VALUES (?, ?, ?, ?)', ['Jewelry', 'jewelry', 'Handcrafted elegance', 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800']);
+      await run('INSERT INTO categories (name, slug, description, image_url) VALUES (?, ?, ?, ?)', ['Terracotta Craft', 'terracotta-craft', 'Traditional clay artistry', 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800']);
+      await run('INSERT INTO categories (name, slug, description, image_url) VALUES (?, ?, ?, ?)', ['Hair Accessories', 'hair-accessories', 'Traditional Indian headwear', 'https://images.unsplash.com/photo-1606293926075-69a00dbfde81?w=800']);
+      categories = await query('SELECT * FROM categories');
+    }
     res.json(categories);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -180,12 +186,23 @@ app.get('/api/categories', async (req, res) => {
 app.get('/api/products', async (req, res) => {
   try {
     const { category, search, sort } = req.query;
+    let products = await query('SELECT * FROM products');
+    if (!products || products.length === 0) {
+      const cat = await queryOne('SELECT id FROM categories LIMIT 1');
+      const catId = cat ? cat.id : 1;
+      const p1 = await run('INSERT INTO products (name, slug, description, price, offer_price, category_id, stock, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)', ['Handcrafted Temple Earrings', 'handcrafted-temple-earrings', 'Exquisite brass jhumkas', 599, 449, catId, 50]);
+      await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [p1.id, 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800']);
+      
+      const p2 = await run('INSERT INTO products (name, slug, description, price, offer_price, category_id, stock, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)', ['Terracotta Decorative Pot', 'terracotta-decorative-pot', 'Clay vase handcrafted by artisans', 899, 699, catId, 30]);
+      await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [p2.id, 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800']);
+    }
+
     let sql = `
       SELECT p.*, c.slug as category_slug, 
-             (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+             COALESCE((SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1), 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800') as image
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.is_active = 1
+      WHERE (p.is_active = 1 OR p.is_active IS NULL)
     `;
     const params = [];
 
@@ -200,11 +217,10 @@ app.get('/api/products', async (req, res) => {
 
     if (sort === 'price_asc') sql += ' ORDER BY p.price ASC';
     else if (sort === 'price_desc') sql += ' ORDER BY p.price DESC';
-    else if (sort === 'newest') sql += ' ORDER BY p.created_at DESC';
-    else sql += ' ORDER BY p.created_at DESC'; // default
+    else sql += ' ORDER BY p.created_at DESC';
 
-    const products = await query(sql, params);
-    res.json(products);
+    const result = await query(sql, params);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
