@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Users as UsersIcon, Mail, Phone, MapPin, Calendar, ShoppingBag, Search, Eye, X, ShieldCheck } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '' : 'https://selvi-crafts-and-art.onrender.com');
 
 const Customers = () => {
   const [customers, setCustomers] = useState([]);

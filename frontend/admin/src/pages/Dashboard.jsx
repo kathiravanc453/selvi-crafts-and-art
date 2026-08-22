@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ShoppingCart, Package, Users, TrendingUp, Clock, CheckCircle, Truck, XCircle } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '' : 'https://selvi-crafts-and-art.onrender.com');
 
 const API = (path) => {
   const token = localStorage.getItem('admin_token');
