@@ -82,11 +82,21 @@ const Products = () => {
 
     // Fallback: Save to local state if backend API is unreachable
     const newProd = { id: editId || Date.now(), ...form, is_active: true };
+    let updatedProds = [];
     if (editId) {
-      setProducts(prev => prev.map(p => p.id === editId ? newProd : p));
+      updatedProds = products.map(p => p.id === editId ? newProd : p);
     } else {
-      setProducts(prev => [...prev, newProd]);
+      updatedProds = [...products, newProd];
     }
+    setProducts(updatedProds);
+    localStorage.setItem('shared_products', JSON.stringify(updatedProds));
+
+    try {
+      const bc = new BroadcastChannel('selvi_store_sync');
+      bc.postMessage({ type: 'PRODUCTS_UPDATED', data: updatedProds });
+      bc.close();
+    } catch(e){}
+
     toast.success(editId ? 'Product updated!' : 'Product created!');
     setShowForm(false);
     setSaving(false);
