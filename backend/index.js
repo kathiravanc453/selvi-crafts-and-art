@@ -301,12 +301,18 @@ app.get('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, 
 // Admin: Create product
 app.post('/api/admin/products', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { name, slug, description, price, offer_price, category_id, stock, is_active, image_url } = req.body;
+    let { name, slug, description, price, offer_price, category_id, stock, is_active, image_url } = req.body;
     const s = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    
+    if (!category_id) {
+      const firstCat = await queryOne('SELECT id FROM categories LIMIT 1');
+      if (firstCat) category_id = firstCat.id;
+    }
+
     const result = await run(`
       INSERT INTO products (name, slug, description, price, offer_price, category_id, stock, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [name, s, description, parseFloat(price), offer_price ? parseFloat(offer_price) : null, category_id || null, stock || 0, is_active !== false ? 1 : 0]);
+    `, [name, s, description, parseFloat(price), offer_price ? parseFloat(offer_price) : null, category_id || null, stock || 0, 1]);
 
     if (image_url) {
       await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [result.id, image_url]);
@@ -320,7 +326,7 @@ app.post('/api/admin/products', authMiddleware, adminMiddleware, async (req, res
       offer_price: offer_price ? parseFloat(offer_price) : null,
       category_id: category_id || null,
       stock: stock || 0,
-      is_active: is_active !== false ? 1 : 0,
+      is_active: 1,
       image_url: image_url || '',
       image: image_url || ''
     };
