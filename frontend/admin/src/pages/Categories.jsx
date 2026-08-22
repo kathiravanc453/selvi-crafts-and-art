@@ -76,11 +76,21 @@ const Categories = () => {
     
     // Fallback: Save to local state if backend API is unreachable
     const newCat = { id: editId || Date.now(), ...form, slug: form.slug || form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') };
+    let updatedCats = [];
     if (editId) {
-      setCategories(prev => prev.map(c => c.id === editId ? newCat : c));
+      updatedCats = categories.map(c => c.id === editId ? newCat : c);
     } else {
-      setCategories(prev => [...prev, newCat]);
+      updatedCats = [...categories, newCat];
     }
+    setCategories(updatedCats);
+    localStorage.setItem('shared_categories', JSON.stringify(updatedCats));
+
+    try {
+      const bc = new BroadcastChannel('selvi_store_sync');
+      bc.postMessage({ type: 'CATEGORIES_UPDATED', data: updatedCats });
+      bc.close();
+    } catch(e){}
+
     toast.success(editId ? 'Category updated!' : 'Category created!');
     setShowForm(false);
     setSaving(false);

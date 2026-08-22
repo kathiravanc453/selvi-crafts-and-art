@@ -7,10 +7,13 @@ const Categories = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('shared_categories');
-    if (saved) {
-      try { setCategories(JSON.parse(saved)); } catch(e){}
-    }
+    const loadCats = () => {
+      const saved = localStorage.getItem('shared_categories');
+      if (saved) {
+        try { setCategories(JSON.parse(saved)); } catch(e){}
+      }
+    };
+    loadCats();
 
     fetch(`${API_BASE}/api/categories`)
       .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
@@ -18,6 +21,16 @@ const Categories = () => {
         if (Array.isArray(data) && data.length > 0) setCategories(data);
       })
       .catch(console.error);
+
+    try {
+      const bc = new BroadcastChannel('selvi_store_sync');
+      bc.onmessage = (event) => {
+        if (event.data?.type === 'CATEGORIES_UPDATED' && Array.isArray(event.data.data)) {
+          setCategories(event.data.data);
+        }
+      };
+      return () => bc.close();
+    } catch(e){}
   }, []);
 
   return (
