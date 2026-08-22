@@ -387,6 +387,34 @@ app.delete('/api/admin/products/:id', authMiddleware, adminMiddleware, async (re
   }
 });
 
+// Admin: Seed sample products into database
+app.post('/api/admin/seed-demo', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    let cat = await queryOne('SELECT id FROM categories LIMIT 1');
+    if (!cat) {
+      const catRes = await run('INSERT INTO categories (name, slug, description, image_url) VALUES (?, ?, ?, ?)', ['Terracotta Craft', 'terracotta-craft', 'Authentic handcrafted Indian items', 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800']);
+      cat = { id: catRes.id };
+    }
+
+    const p1 = await run('INSERT INTO products (name, slug, description, price, offer_price, category_id, stock, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)', ['Handcrafted Brass Bangle', 'handcrafted-brass-bangle', 'Traditional Indian handmade brass bangle', 49.00, null, cat.id, 10]);
+    await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [p1.id, 'https://images.unsplash.com/photo-1611591475281-b1c945375d83?w=800']);
+
+    const p2 = await run('INSERT INTO products (name, slug, description, price, offer_price, category_id, stock, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, 1)', ['Terracotta Decorative Pot', 'terracotta-decorative-pot', 'Hand-painted clay vase made by traditional artisans', 899.00, 699.00, cat.id, 30]);
+    await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [p2.id, 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800']);
+
+    const products = await query(`
+      SELECT p.*, c.name as category_name, c.slug as category_slug,
+             (SELECT image_url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as image
+      FROM products p
+      LEFT JOIN categories c ON p.category_id = c.id
+      ORDER BY p.id DESC
+    `);
+    res.json({ message: 'Products seeded successfully', products });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin: Get all categories (for product form dropdown)
 app.get('/api/admin/categories', authMiddleware, adminMiddleware, async (req, res) => {
   try {

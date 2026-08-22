@@ -139,6 +139,29 @@ const Products = () => {
     toast.success(`${p.is_active?'Deactivated':'Activated'}`); fetchAll();
   };
 
+  const handleSeedDemo = async () => {
+    toast.loading('Seeding store items into Neon Database...', { id: 'seed' });
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/seed-demo`, { method: 'POST', headers: hdrs() });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.products)) {
+          setProducts(data.products);
+          localStorage.setItem('shared_products', JSON.stringify(data.products));
+          try {
+            const bc = new BroadcastChannel('selvi_store_sync');
+            bc.postMessage({ type: 'PRODUCTS_UPDATED', data: data.products });
+            bc.close();
+          } catch(e){}
+        }
+        toast.success('Store items seeded successfully into Neon DB!', { id: 'seed' });
+        fetchAll();
+      }
+    } catch(e) {
+      toast.error('Error seeding products', { id: 'seed' });
+    }
+  };
+
   const filtered = products.filter(p=>p.name?.toLowerCase().includes(search.toLowerCase()));
   const discount = form.offer_price && form.price ? Math.round((1-parseFloat(form.offer_price)/parseFloat(form.price))*100) : 0;
 
@@ -146,7 +169,10 @@ const Products = () => {
     <div>
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:24, flexWrap:'wrap', gap:12 }}>
         <div><h1 className="page-title">Products</h1><p className="page-subtitle">{products.length} total products</p></div>
-        <button className="btn btn-gold" onClick={openAdd}><Plus size={18}/>Add New Product</button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" onClick={handleSeedDemo} style={{ backgroundColor: '#1890ff', color: '#fff' }}>✨ Seed Store Items</button>
+          <button className="btn btn-gold" onClick={openAdd}><Plus size={18}/>Add New Product</button>
+        </div>
       </div>
 
       <div className="search-bar">

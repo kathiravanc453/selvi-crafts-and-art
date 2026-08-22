@@ -27,7 +27,10 @@ const ProductCard = ({ product }) => {
     toggleWishlist(product);
   };
 
-  const imgSrc = product.image || product.image_url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800';
+  let imgSrc = product.image || product.image_url || 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800';
+  if (imgSrc.startsWith('/')) {
+    imgSrc = `${API_BASE}${imgSrc}`;
+  }
   const prodSlug = product.slug || (product.name ? product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'product');
 
   return (
