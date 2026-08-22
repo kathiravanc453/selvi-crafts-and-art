@@ -292,16 +292,30 @@ app.get('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, 
 // Admin: Create product
 app.post('/api/admin/products', authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { name, slug, description, price, offer_price, category_id, stock, is_active, shipping_days, shipping_info, image_url } = req.body;
+    const { name, slug, description, price, offer_price, category_id, stock, is_active, image_url } = req.body;
+    const s = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const result = await run(`
       INSERT INTO products (name, slug, description, price, offer_price, category_id, stock, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [name, slug || name.toLowerCase().replace(/\s+/g, '-'), description, price, offer_price || null, category_id || null, stock || 0, is_active !== false ? 1 : 0]);
+    `, [name, s, description, parseFloat(price), offer_price ? parseFloat(offer_price) : null, category_id || null, stock || 0, is_active !== false ? 1 : 0]);
 
     if (image_url) {
       await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [result.id, image_url]);
     }
-    res.status(201).json({ message: 'Product created', id: result.id });
+    const createdProduct = {
+      id: result.id,
+      name,
+      slug: s,
+      description,
+      price: parseFloat(price),
+      offer_price: offer_price ? parseFloat(offer_price) : null,
+      category_id: category_id || null,
+      stock: stock || 0,
+      is_active: is_active !== false ? 1 : 0,
+      image_url: image_url || '',
+      image: image_url || ''
+    };
+    res.status(201).json(createdProduct);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -311,16 +325,16 @@ app.post('/api/admin/products', authMiddleware, adminMiddleware, async (req, res
 app.put('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { name, slug, description, price, offer_price, category_id, stock, is_active, image_url } = req.body;
+    const s = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     await run(`
       UPDATE products SET
         name = ?, slug = ?, description = ?, price = ?, offer_price = ?,
         category_id = ?, stock = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `, [name, slug, description, parseFloat(price), offer_price ? parseFloat(offer_price) : null,
+    `, [name, s, description, parseFloat(price), offer_price ? parseFloat(offer_price) : null,
         category_id || null, parseInt(stock), is_active ? 1 : 0, req.params.id]);
 
     if (image_url) {
-      // Update primary image
       const existing = await queryOne('SELECT id FROM product_images WHERE product_id = ? AND is_primary = 1', [req.params.id]);
       if (existing) {
         await run('UPDATE product_images SET image_url = ? WHERE id = ?', [image_url, existing.id]);
@@ -328,7 +342,20 @@ app.put('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, 
         await run('INSERT INTO product_images (product_id, image_url, is_primary) VALUES (?, ?, 1)', [req.params.id, image_url]);
       }
     }
-    res.json({ message: 'Product updated' });
+    const updatedProduct = {
+      id: req.params.id,
+      name,
+      slug: s,
+      description,
+      price: parseFloat(price),
+      offer_price: offer_price ? parseFloat(offer_price) : null,
+      category_id: category_id || null,
+      stock: stock || 0,
+      is_active: is_active ? 1 : 0,
+      image_url: image_url || '',
+      image: image_url || ''
+    };
+    res.json(updatedProduct);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
