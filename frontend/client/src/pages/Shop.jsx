@@ -6,51 +6,8 @@ import toast from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '' : 'https://selvi-crafts-and-art.onrender.com');
 
-const DEFAULT_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Handcrafted Temple Earrings',
-    slug: 'handcrafted-temple-earrings',
-    description: 'Exquisite traditional Indian temple jhumka earrings.',
-    price: 599,
-    offer_price: 449,
-    category_slug: 'jewelry',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800'
-  },
-  {
-    id: 2,
-    name: 'Terracotta Decorative Pot',
-    slug: 'terracotta-decorative-pot',
-    description: 'Hand-painted clay vase made by traditional artisans.',
-    price: 899,
-    offer_price: 699,
-    category_slug: 'terracotta-craft',
-    image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800'
-  },
-  {
-    id: 3,
-    name: 'Silk Thread Bangles Set',
-    slug: 'silk-thread-bangles-set',
-    description: 'Vibrant handcrafted silk bangles set.',
-    price: 399,
-    offer_price: 299,
-    category_slug: 'jewelry',
-    image: 'https://images.unsplash.com/photo-1611591475281-b1c945375d83?w=800'
-  },
-  {
-    id: 4,
-    name: 'Handmade Bridal Hair Accessories',
-    slug: 'handmade-bridal-hair-accessories',
-    description: 'Traditional hair gajra and hairclips.',
-    price: 499,
-    offer_price: 349,
-    category_slug: 'hair-accessories',
-    image: 'https://images.unsplash.com/photo-1606293926075-69a00dbfde81?w=800'
-  }
-];
-
 const Shop = () => {
-  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest');
