@@ -379,8 +379,9 @@ app.put('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, 
 // Admin: Delete product
 app.delete('/api/admin/products/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
+    await run('DELETE FROM product_images WHERE product_id = ?', [req.params.id]);
     await run('DELETE FROM products WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Product deleted' });
+    res.json({ message: 'Product deleted', id: req.params.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -425,15 +426,16 @@ app.post('/api/admin/categories', authMiddleware, adminMiddleware, async (req, r
 app.put('/api/admin/categories/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { name, slug, description, image_url } = req.body;
-    await run('UPDATE categories SET name = ?, slug = ?, description = ?, image_url = ? WHERE id = ?', [name, slug, description, image_url, req.params.id]);
-    res.json({ message: 'Category updated' });
+    const s = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    await run('UPDATE categories SET name = ?, slug = ?, description = ?, image_url = ? WHERE id = ?', [name, s, description, image_url, req.params.id]);
+    res.json({ id: req.params.id, name, slug: s, description, image_url });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 app.delete('/api/admin/categories/:id', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     await run('DELETE FROM categories WHERE id = ?', [req.params.id]);
-    res.json({ message: 'Category deleted' });
+    res.json({ message: 'Category deleted', id: req.params.id });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
