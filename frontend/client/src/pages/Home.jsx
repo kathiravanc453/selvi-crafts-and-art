@@ -12,19 +12,24 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    const savedCats = localStorage.getItem('shared_categories');
+    if (savedCats) { try { setCategories(JSON.parse(savedCats)); } catch(e){} }
+    const savedProds = localStorage.getItem('shared_products');
+    if (savedProds) { try { setProducts(JSON.parse(savedProds)); } catch(e){} }
+
     fetch(`${API_BASE}/api/banners`)
-      .then(res => res.json())
-      .then(data => setBanners(Array.isArray(data) ? data : []))
+      .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
+      .then(data => { if (Array.isArray(data) && data.length > 0) setBanners(data); })
       .catch(console.error);
 
     fetch(`${API_BASE}/api/categories`)
-      .then(res => res.json())
-      .then(data => setCategories(Array.isArray(data) ? data : []))
+      .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
+      .then(data => { if (Array.isArray(data) && data.length > 0) setCategories(data); })
       .catch(console.error);
 
     fetch(`${API_BASE}/api/products`)
-      .then(res => res.json())
-      .then(data => setProducts(Array.isArray(data) ? data : []))
+      .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
+      .then(data => { if (Array.isArray(data) && data.length > 0) setProducts(data); })
       .catch(console.error);
   }, []);
 

@@ -16,13 +16,30 @@ const Categories = () => {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { 
+    const saved = localStorage.getItem('shared_categories');
+    if (saved) {
+      try { setCategories(JSON.parse(saved)); } catch(e){}
+    }
+    fetchAll(); 
+  }, []);
+
+  useEffect(() => {
+    if (categories.length > 0) {
+      localStorage.setItem('shared_categories', JSON.stringify(categories));
+    }
+  }, [categories]);
 
   const fetchAll = () => {
     fetch(`${API_BASE}/api/admin/categories`, { headers: hdrs() })
-      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : [])
-      .then(d => setCategories(Array.isArray(d) ? d : []))
-      .catch(() => setCategories([]));
+      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : null)
+      .then(d => {
+        if (Array.isArray(d) && d.length > 0) {
+          setCategories(d);
+          localStorage.setItem('shared_categories', JSON.stringify(d));
+        }
+      })
+      .catch(() => {});
   };
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true); };

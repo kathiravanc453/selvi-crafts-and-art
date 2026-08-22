@@ -7,9 +7,16 @@ const Categories = () => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
+    const saved = localStorage.getItem('shared_categories');
+    if (saved) {
+      try { setCategories(JSON.parse(saved)); } catch(e){}
+    }
+
     fetch(`${API_BASE}/api/categories`)
-      .then(res => res.json())
-      .then(data => setCategories(data))
+      .then(res => (res.ok && res.headers.get('content-type')?.includes('application/json')) ? res.json() : null)
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) setCategories(data);
+      })
       .catch(console.error);
   }, []);
 

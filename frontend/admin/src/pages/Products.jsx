@@ -18,11 +18,30 @@ const Products = () => {
   const [tab, setTab] = useState('details');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { 
+    const savedProds = localStorage.getItem('shared_products');
+    if (savedProds) { try { setProducts(JSON.parse(savedProds)); } catch(e){} }
+    const savedCats = localStorage.getItem('shared_categories');
+    if (savedCats) { try { setCategories(JSON.parse(savedCats)); } catch(e){} }
+    fetchAll(); 
+  }, []);
+
+  useEffect(() => {
+    if (products.length > 0) {
+      localStorage.setItem('shared_products', JSON.stringify(products));
+    }
+  }, [products]);
 
   const fetchAll = () => {
-    fetch(`${API_BASE}/api/admin/products`, { headers: hdrs() }).then(r=>r.json()).then(d=>setProducts(Array.isArray(d)?d:[]));
-    fetch(`${API_BASE}/api/admin/categories`,{headers:hdrs()}).then(r=>r.json()).then(d=>setCategories(Array.isArray(d)?d:[]));
+    fetch(`${API_BASE}/api/admin/products`, { headers: hdrs() })
+      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : null)
+      .then(d => { if (Array.isArray(d) && d.length > 0) { setProducts(d); localStorage.setItem('shared_products', JSON.stringify(d)); } })
+      .catch(() => {});
+
+    fetch(`${API_BASE}/api/admin/categories`, { headers: hdrs() })
+      .then(r => (r.ok && r.headers.get('content-type')?.includes('application/json')) ? r.json() : null)
+      .then(d => { if (Array.isArray(d) && d.length > 0) { setCategories(d); localStorage.setItem('shared_categories', JSON.stringify(d)); } })
+      .catch(() => {});
   };
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setTab('details'); setShowForm(true); };
