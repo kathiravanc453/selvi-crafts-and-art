@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Save, Search, ToggleLeft, ToggleRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '' : 'https://selvi-crafts-and-art.onrender.com');
 const token = () => localStorage.getItem('admin_token');
 const hdrs = () => ({ Authorization: `Bearer ${token()}`, 'Content-Type': 'application/json' });
 

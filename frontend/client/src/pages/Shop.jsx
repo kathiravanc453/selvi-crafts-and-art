@@ -4,7 +4,7 @@ import ProductCard from '../components/ProductCard';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '' : 'https://selvi-crafts-and-art.onrender.com');
 
 const Shop = () => {
   const [products, setProducts] = useState([]);

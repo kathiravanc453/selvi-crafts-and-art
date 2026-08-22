@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import Testimonials from '../components/Testimonials';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname.includes('localhost') ? '' : 'https://selvi-crafts-and-art.onrender.com');
 
 const Home = () => {
   const [banners, setBanners] = useState([]);
